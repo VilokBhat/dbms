@@ -1,0 +1,55 @@
+Consider the insurance database given below. The primary keys are made bold  and the data types are specified.
+PERSON( driver_id:string , name:string , address:string )
+CAR( regno:string , model:string , year:int )
+ACCIDENT( report_number:int , accd_date:date , location:string )
+OWNS( driver_id:string , regno:string )
+PARTICIPATED( driver_id:string , regno:string , report_number:int , damage_amount:int)
+1)Create the above tables by properly specifying the primary keys and foreign keys.
+2)Enter at least five tuples for each relation.
+3)Demonstrate how you
+a.Update the damage amount for the car with specific regno in the accident with report number 12 to 25000.
+b.Add a new accident to the database.
+4)Find the total number of people who owned cars that were involved in accidents in the year 2008.
+5)Find the number of accidents in which cars belonging to a specific model were involved.
+
+
+SQL> create table person(driver_id varchar(10),name varchar(10),address varchar(10),primary key(driver_id));
+
+SQL> create table car(regno varchar(10),model varchar(10),year int,primary key(regno));
+
+SQL>  create table accident(report_number int,accd_date date,location varchar(10),primary key(report_number));
+
+SQL> create table owns(driver_id varchar(10),regno varchar(10),primary key(driver_id,regno),foreign key(driver_id) references person(driver_id),foreign key(regno) references car(regno));
+
+SQL> create table participated(driver_id varchar(10),regno varchar(10),report_number int,damage_amount int,primary key(driver_id,regno,report_number),foreign key(driver_id) references person(driver_id),foreign key(regno) references car(regno),foreign key(report_number) references accident(report_number));
+
+2.
+
+SQL> insert into person values('&driver_id','&name','&address');
+
+SQL> insert into  car values('&regno','&model',&year);
+
+SQL> insert into accident values(&report_number,'&accd_date','&location');
+
+SQL> insert into owns values('&driver_id','&regno');
+
+SQL> insert into participated values('&driver_id','&regno',&report_number,&damage_amount);
+
+3a.
+
+SQL> update participated set damage_amount=25000 where report_number=12 and regno='5';
+
+3b.
+
+SQL> insert into accident values(&report_number,'&accd_date','&location');
+
+SQL> insert into participated values('&driver_id','&regno',&report_number,&damage_amount);
+
+4.
+
+SQL> select count(distinct o.driver_id) as People from owns o,participated p,accident a where a.accd_date like
+ '%08' and o.regno=p.regno and p.report_number=a.report_number;
+
+5.
+
+SQL> select count(*) as Totalcars from car c,participated p where c.regno=p.regno and c.model='Alto';

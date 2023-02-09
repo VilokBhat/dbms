@@ -1,0 +1,55 @@
+Consider the following relations for a order processing database application in a company.
+CUSTOMER( custno:int , cname:string , city:string )
+ORDER( orderno:int , odate:date , custno:int , ord_amt:int )
+ORDER_ITEM( orderno:int , itemno:int , quantity:int )
+ITEM( itemno:int , unitprice:int )
+SHIPMENT( orderno:int , warehouseno:int , ship_date:date )
+WAREHOUSE( warehouseno:int , city:string )
+1)Create the above tables by properly specifying the primary keys and foreign keys.
+2)Enter at least five tuples for each relation.
+3)Produce a listing: custname , No_of_orders , Avg_order_amount ,  where the middle column is the total number of orders by the customer and the last column is the average order amount for that customer.
+4)List the orderno for orders that were shipped from all the warehouses that the company has in a specific city.
+5)Demonstrate the deletion of an item from the ITEM table and demonstrate a method of handling the rows in the ORDER_ITEM table that contains this particular item.
+
+
+SQL> create table customer(custno int,cname varchar(10),city varchar(10),primary key(custno));
+
+SQL> create table order1(orderno int,odate date,custno int,ord_amt int,primary key(orderno),foreign key(custno) references customer(custno));
+
+SQL> create table item(itemno int,untiprice int,primary key(itemno));
+
+SQL> create table order_item(orderno int,itemno int,quantity int,primary key(orderno,itemno),foreign key(orderno) references order1(orderno),foreign key(itemno) references item(itemno) on delete cascade);
+
+SQL> create table warehouse(warehouseno int,city varchar(10),primary key(warehouseno));
+
+SQL> create table shipment(orderno int,warehouseno int,ship_date date,primary key(orderno,warehouseno),foreign key(orderno) references order1(orderno),foreign key(warehouseno) references warehouse(warehouseno));
+
+2.
+
+SQL> insert into customer values(&custno,'&cname','&city');
+
+SQL> insert into order1 values(&orderno,'&odate',&custno,&ord_amt);
+
+SQL> insert into item values(&itemno,&unitprice);
+
+SQL> insert into order_item values(&orderno,&itemno,&quantity);
+
+SQL> insert into warehouse values(&warehouseno,'&city');
+
+SQL> insert into shipment values(&orderno,&warehouseno,'&ship_date');
+
+3.
+
+SQL> select c.custno,count(*) as No_of_orders,avg(o.ord_amt) as Avg_order_amount from customer c,order1 o where o.custno=c.custno group by c.custno;
+
+4.
+
+SQL> select distinct s.orderno from shipment s where not exists((select warehouseno from warehouse where city='Bangalore') minus (select w.warehouseno from shipment w where w.orderno=s.orderno))and exists ( select warehouseno from warehouse where city='Bangalore');
+
+                                        OR
+
+SQL> select s.orderno from shipment s,warehouse w where s.warehouseno=w.warehouseno and w.city='Bangalore' group by orderno having count(*)=(select count(*) from warehouse where city='Bangalore') and not(count(*)=0);
+
+5.
+
+SQL> delete from item where itemno=3;
